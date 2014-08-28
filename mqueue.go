@@ -24,7 +24,6 @@ func (w Worker) Do() {
 
 type Queue struct {
 	ch      chan Worker
-	sw      chan bool
 	MaxSize int
 	running bool
 }
