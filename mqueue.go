@@ -16,9 +16,13 @@
 
 package mqueue
 
-type Task func(...interface{})
+type Task interface {
+	Do(v ...interface{})
+}
 
-func (t Task) Do(v ...interface{}) {
+type TaskFunc func(...interface{})
+
+func (t TaskFunc) Do(v ...interface{}) {
 	t(v...)
 }
 
@@ -67,9 +71,19 @@ func (q *Queue) Start() {
 	q.running = true
 }
 
-func (q *Queue) Add(t Task) {
+func (q *Queue) AddTask(ts ...Task) {
 	if q.running {
-		q.ch <- t
+		for _, t := range ts {
+			q.ch <- t
+		}
+	}
+}
+
+func (q *Queue) AddTaskFunc(ts ...TaskFunc) {
+	if q.running {
+		for _, t := range ts {
+			q.ch <- t
+		}
 	}
 }
 

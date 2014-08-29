@@ -40,7 +40,7 @@ func TestQueue(t *testing.T) {
 			})
 
 			convey.Convey("Add a task", func() {
-				queue.Add(func(...interface{}) {
+				queue.AddTaskFunc(func(...interface{}) {
 					convey.Convey("You should see me after a while", func() {
 						convey.So(true, convey.ShouldBeTrue)
 					})
@@ -57,7 +57,7 @@ func TestQueue(t *testing.T) {
 			})
 
 			convey.Convey("Add a task", func() {
-				queue.Add(func(...interface{}) {
+				queue.AddTaskFunc(func(...interface{}) {
 					convey.Convey("You shouldn't see me forever", func() {
 						convey.So(false, convey.ShouldBeTrue)
 					})
