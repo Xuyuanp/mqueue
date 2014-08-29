@@ -25,35 +25,47 @@ import (
 
 func TestQueue(t *testing.T) {
 	convey.Convey("Given a new Queue", t, func() {
-		var queue = NewQueue(100)
+		queue := NewQueue(100)
+
 		convey.Convey("It shouldn't be running", func() {
 			convey.So(queue.Running(), convey.ShouldBeFalse)
 		})
-		convey.Convey("It should be running after Run()", func() {
-			queue.Run()
-			convey.So(queue.Running(), convey.ShouldBeTrue)
-		})
-		convey.Convey("It shouldn't be running after Stop()", func() {
-			queue.Stop()
+
+		convey.Convey("After Start()", func() {
+			queue.Start()
 			time.Sleep(time.Millisecond * 10)
-			convey.So(queue.Running(), convey.ShouldBeFalse)
-		})
 
-		queue.Add(func() {
-			convey.Convey("You shouldn't see me", func() {
-				convey.So(false, convey.ShouldBeTrue)
+			convey.Convey("It should be running", func() {
+				convey.So(queue.Running(), convey.ShouldBeTrue)
+			})
+
+			convey.Convey("Add a task", func() {
+				queue.Add(func(...interface{}) {
+					convey.Convey("You should see me after a while", func() {
+						convey.So(true, convey.ShouldBeTrue)
+					})
+				})
+				time.Sleep(time.Millisecond * 10)
 			})
 		})
 
-		queue.Run()
-		time.Sleep(time.Millisecond * 10)
-		queue.Add(func() {
-			convey.Convey("You should see me", func() {
-				convey.So(true, convey.ShouldBeTrue)
+		convey.Convey("After Stop()", func() {
+			queue.Stop()
+
+			convey.Convey("It shouldn't be running", func() {
+				convey.So(queue.Running(), convey.ShouldBeFalse)
+			})
+
+			convey.Convey("Add a task", func() {
+				queue.Add(func(...interface{}) {
+					convey.Convey("You shouldn't see me forever", func() {
+						convey.So(false, convey.ShouldBeTrue)
+					})
+				})
+				time.Sleep(time.Millisecond * 10)
 			})
 		})
-		time.Sleep(time.Millisecond * 10)
-		queue.Stop()
+
 		time.Sleep(time.Millisecond * 10)
 	})
 }

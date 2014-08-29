@@ -16,55 +16,71 @@
 
 package mqueue
 
-type Worker func()
+type Task func(...interface{})
 
-func (w Worker) Do() {
-	w()
+func (t Task) Do(v ...interface{}) {
+	t(v...)
 }
 
 type Queue struct {
-	ch      chan Worker
+	V       []interface{}
+	ch      chan Task
 	MaxSize int
 	running bool
+	init    bool
 }
 
 func NewQueue(size int) *Queue {
-	return &Queue{
+	q := &Queue{
+		V:       make([]interface{}, 0),
 		MaxSize: size,
 		running: false,
+		init:    false,
 	}
+
+	return q
 }
 
-func (q *Queue) Run() {
-	if q.running {
+func (q *Queue) Init() {
+	if q.init {
 		return
 	}
-	q.running = true
-	q.ch = make(chan Worker, q.MaxSize)
+	q.init = true
+	q.ch = make(chan Task, q.MaxSize)
 	go func() {
 		for {
-			w, ok := <-q.ch
+			t, ok := <-q.ch
 			if !ok {
 				return
 			}
-			w.Do()
+			t.Do(q.V...)
 		}
 	}()
 }
 
 func (q *Queue) Stop() {
-	if q.running {
-		q.running = false
-		close(q.ch)
-	}
+	q.running = false
 }
 
-func (q *Queue) Add(w Worker) {
+func (q *Queue) Start() {
+	q.Init()
+	q.running = true
+}
+
+func (q *Queue) Add(t Task) {
 	if q.running {
-		q.ch <- w
+		q.ch <- t
 	}
 }
 
 func (q *Queue) Running() bool {
 	return q.running
+}
+
+func (q *Queue) Destroy() {
+	q.Stop()
+	if q.init {
+		close(q.ch)
+		q.init = false
+	}
 }
