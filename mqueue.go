@@ -53,11 +53,13 @@ func (q *Queue) Init() {
 	q.ch = make(chan Task, q.MaxSize)
 	go func() {
 		for {
-			t, ok := <-q.ch
-			if !ok {
-				return
+			select {
+			case t, ok := <-q.ch:
+				if !ok {
+					return
+				}
+				t.Do(q.V...)
 			}
-			t.Do(q.V...)
 		}
 	}()
 }
