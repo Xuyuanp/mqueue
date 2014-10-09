@@ -16,16 +16,20 @@
 
 package mqueue
 
+// Task define a task interface
 type Task interface {
 	Do(v ...interface{})
 }
 
+// TaskFunc is an implement of Task interface
 type TaskFunc func(...interface{})
 
+// Do calls TaskFunc function
 func (t TaskFunc) Do(v ...interface{}) {
 	t(v...)
 }
 
+// Queue handles multiple tasks in sequence
 type Queue struct {
 	V       []interface{}
 	ch      chan Task
@@ -34,6 +38,7 @@ type Queue struct {
 	init    bool
 }
 
+// NewQueue returns a new Queue
 func NewQueue(size int) *Queue {
 	q := &Queue{
 		V:       make([]interface{}, 0),
@@ -45,6 +50,7 @@ func NewQueue(size int) *Queue {
 	return q
 }
 
+// Init initialize the Queue
 func (q *Queue) Init() {
 	if q.init {
 		return
@@ -64,15 +70,18 @@ func (q *Queue) Init() {
 	}()
 }
 
+// Stop stop handle task
 func (q *Queue) Stop() {
 	q.running = false
 }
 
+// Start start handle task
 func (q *Queue) Start() {
 	q.Init()
 	q.running = true
 }
 
+// AddTask add new task to Queue
 func (q *Queue) AddTask(ts ...Task) {
 	if q.running {
 		for _, t := range ts {
@@ -81,6 +90,7 @@ func (q *Queue) AddTask(ts ...Task) {
 	}
 }
 
+// AddTaskFunc add new TaskFunc to Queue
 func (q *Queue) AddTaskFunc(ts ...TaskFunc) {
 	if q.running {
 		for _, t := range ts {
@@ -89,10 +99,12 @@ func (q *Queue) AddTaskFunc(ts ...TaskFunc) {
 	}
 }
 
+// Running return true if the queue is running, false or not
 func (q *Queue) Running() bool {
 	return q.running
 }
 
+// Destroy destroy the queue
 func (q *Queue) Destroy() {
 	q.Stop()
 	if q.init {
