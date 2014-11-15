@@ -29,6 +29,13 @@ func (t TaskFunc) Do(v ...interface{}) {
 	t(v...)
 }
 
+var defaultQueue *Queue
+
+func init() {
+	defaultQueue = NewQueue(10000)
+	defaultQueue.Start()
+}
+
 // Queue handles multiple tasks in sequence
 type Queue struct {
 	V       []interface{}
@@ -111,4 +118,14 @@ func (q *Queue) Destroy() {
 		close(q.ch)
 		q.init = false
 	}
+}
+
+// AddTask add new task to Queue
+func AddTask(ts ...Task) {
+	defaultQueue.AddTask(ts...)
+}
+
+// AddTaskFunc add new TaskFunc to Queue
+func AddTaskFunc(ts ...TaskFunc) {
+	defaultQueue.AddTaskFunc(ts...)
 }
